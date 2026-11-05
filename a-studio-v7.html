@@ -319,7 +319,11 @@ dialog[open]{animation:dp .35s cubic-bezier(.2,.8,.2,1)}@keyframes dp{from{opaci
 <section id="contact"><div class="w cl">
 <div class="rv"><h2>Have a project in mind?</h2><p class="mu" style="margin-top:20px;max-width:40ch">Let’s create something exceptional together. Tell us about your business and what you have in mind.</p>
 <div class="cd"><div><small>Email</small><a href="mailto:astudio.design@proton.me">astudio.design@proton.me</a></div><div><small>Phone</small><a href="tel:+38348288492">+383 48 288 492</a></div><div><small>Instagram</small><a href="https://www.instagram.com/astudio.web/" target="_blank" rel="noopener noreferrer">@astudio.web ↗</a></div><div><small>Studio</small><span>Prizren, Kosovo</span></div></div></div>
-<form id="f" class="rv">
+<form id="f" class="rv" method="POST" action="https://api.web3forms.com/submit">
+<input type="hidden" name="access_key" value="48ba776b-9bef-459d-8449-388b7ac04d43">
+<input type="hidden" name="subject" value="New A STUDIO project inquiry">
+<input type="hidden" name="from_name" value="A STUDIO website">
+<input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none">
 <div class="fr"><label>Full name *<input name="name" autocomplete="name" required placeholder="Your name"></label><label>Email address *<input type="email" name="email" autocomplete="email" required placeholder="you@company.com"></label></div>
 <div class="fr"><label>Business name (optional)<input name="business" autocomplete="organization" placeholder="Your business"></label><label>Website type *<select name="type" required><option value="" disabled selected>Select a service</option><option>Business website</option><option>E-commerce website</option><option>Restaurant website</option><option>Portfolio website</option><option>Landing page</option><option>Website redesign</option><option>Not sure yet</option></select></label></div>
 <label>Tell us about your project *<textarea name="description" required rows="4" placeholder="What are you working on? What would a great result look like?"></textarea></label>
@@ -369,10 +373,25 @@ addEventListener('pointermove',e=>{if(dn)rail.scrollLeft=sl-(e.clientX-sx)});
 addEventListener('pointerup',()=>{if(dn){dn=0;rail.style.scrollSnapType=''}});
 rail.addEventListener('dragstart',e=>e.preventDefault());
 $$('[data-plan]').forEach(a=>a.addEventListener('click',()=>{$('#plan').value=a.dataset.plan}));
-$('#f').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);
- const body=`Name: ${d.get('name')}\nEmail: ${d.get('email')}\nBusiness: ${d.get('business')||'-'}\nWebsite type: ${d.get('type')}\nPackage: ${d.get('plan')||'-'}\nBudget: ${d.get('budget')||'-'}\n\n${d.get('description')}`;
- location.href='mailto:astudio.design@proton.me?subject='+encodeURIComponent('Project inquiry — '+d.get('name'))+'&body='+encodeURIComponent(body);
- $('#st').textContent=MSG[L]});
+$('#f').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const form=e.currentTarget,button=form.querySelector('button[type="submit"]');
+ const payload=Object.fromEntries(new FormData(form).entries());
+ const originalText=button.textContent;
+ formMessage='sending';$('#st').textContent=MSG.sending[L];
+ button.disabled=true;button.textContent=L==='sq'?'Duke dërguar…':'Sending…';
+ try{
+  const response=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||!result.success)throw new Error(result.message||'submit_failed');
+  formMessage='success';$('#st').textContent=MSG.success[L];
+  form.reset();
+ }catch(error){
+  formMessage='error';$('#st').textContent=MSG.error[L];
+ }finally{
+  button.disabled=false;button.textContent=originalText;
+ }
+});
 
 if(matchMedia('(hover:hover) and (pointer:fine)').matches&&!rm){const ring=document.createElement('div');ring.className='ring';document.body.append(ring);let x=0,y=0,rx=0,ry=0,s=1,ts=1;
 addEventListener('pointermove',e=>{x=e.clientX;y=e.clientY;ring.style.opacity=1;ts=e.target.closest&&e.target.closest('a,button,summary,.v,input,select,textarea')?1.9:1});
@@ -381,7 +400,7 @@ const AL={"Try it with your own name": "Provoje me emrin tënd", "Old site, new 
 
 const SQ=[{n:'Restorant',k:'Një vend për t’u ndalur',t:'Pak më shumë ritual.',b:'Rezervo tavolinë'},{n:'Dyqan online',k:'Koleksioni i ri',t:'Objekte për jetën.',b:'Bli tani'},{n:'Portofol',k:'Strategji · Dizajn · Digjitale',t:'Krijo hapësirë për rritje.',b:'Shih projektet'},{n:'Landing page',k:'Një faqe. Një qëllim.',t:'Kthe vizitorët në klientë.',b:'Fillo tani'}];
 let L='en';const lg=(i,k)=>L==='sq'?SQ[i][k]:TH[i][k];
-const MSG={en:'Your email app should open with the inquiry filled in. If nothing opens, write to astudio.design@proton.me.',sq:'Aplikacioni i email-it duhet të hapet me kërkesën e plotësuar. Nëse nuk hapet, shkruani te astudio.design@proton.me.'};
+const MSG={success:{en:'Thanks — your inquiry was sent. We’ll be in touch soon.',sq:'Faleminderit — kërkesa u dërgua. Do t’ju kontaktojmë së shpejti.'},sending:{en:'Sending your inquiry…',sq:'Duke dërguar kërkesën…'},error:{en:'We couldn’t send your inquiry. Please try again or message us on WhatsApp.',sq:'Kërkesa nuk u dërgua. Provoni përsëri ose na shkruani në WhatsApp.'}};let formMessage='';
 let stOn=0;
 const WA='https://wa.me/38348288492?text=',WM={en:'Hello A STUDIO! I found your website and I’d like to talk about a project.',sq:'Përshëndetje A STUDIO! E pashë faqen tuaj dhe do të doja të flisja për një projekt.'};
 const QT={'Landing page':1,'Portfolio website':1,'Business website':2,'Restaurant website':2,'Website redesign':2,'E-commerce website':4},QW={shop:2,book:1,brand:1,seo:1,anim:1};
@@ -405,7 +424,7 @@ const setLang=l=>{L=l;TN.forEach(([n,o])=>{const k=o.trim();n.nodeValue=l==='sq'
  PL.forEach(([e,o])=>{e.placeholder=l==='sq'&&PH[o]?PH[o]:o});
  document.documentElement.lang=l;$('#lg').textContent=l==='sq'?'EN':'SQ';$('#lg').setAttribute('aria-label',l==='sq'?'Switch to English':'Kalo në shqip');
  $('#mb').setAttribute('aria-label',l==='sq'?'Menuja':'Menu');
- if($('#st').textContent)$('#st').textContent=MSG[l];
+ if(formMessage)$('#st').textContent=MSG[formMessage][l];
  mkTabs();if(cur>=0)show(cur);calc();$('#wa').href=WA+encodeURIComponent(WM[l]);$('#wa').setAttribute('aria-label',l==='sq'?'Shkruaj në WhatsApp':'Chat on WhatsApp');$('.fp').setAttribute('aria-label',l==='sq'?'Na telefono':'Call us');
  try{localStorage.setItem('as-lang',l)}catch(e){}};
 let sv;try{sv=localStorage.getItem('as-lang')}catch(e){}
